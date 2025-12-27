@@ -283,7 +283,11 @@
             <div class="question-meta" id="q-count"></div>
             <div class="question" id="q-text"></div>
             <div class="options-grid" id="options-container"></div>
-            <button id="next-btn" class="btn" onclick="nextQuestion()">Next →</button>
+            <div class="button-container" style="display: flex; gap: 10px; margin-top: 15px;">
+                <button id="prev-btn" class="btn btn-secondary" onclick="prevQuestion()"
+                    style="display: none; flex: 1;">← Previous</button>
+                <button id="next-btn" class="btn" onclick="nextQuestion()" style="flex: 1;">Next →</button>
+            </div>
         </div>
 
         <div id="result-screen" class="hidden">
@@ -1860,6 +1864,8 @@
             nextBtn.style.display = 'none';
             nextBtn.innerText = currentIdx === questions.length - 1 ? 'Submit' : 'Next →';
 
+            document.getElementById('prev-btn').style.display = currentIdx > 0 ? 'block' : 'none';
+
             const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
             q.options.forEach((opt, i) => {
@@ -1878,6 +1884,21 @@
                 btn.onclick = () => checkAnswer(i, btn);
                 container.appendChild(btn);
             });
+
+            if (userAnswers[currentIdx]) {
+                const ua = userAnswers[currentIdx];
+                const selectedIdx = questions[currentIdx].options.indexOf(ua.selected);
+                const correctIdx = questions[currentIdx].answer;
+                const allBtns = document.querySelectorAll('.option');
+                allBtns.forEach(b => b.disabled = true);
+                allBtns[correctIdx].classList.add('correct');
+                if (!ua.isCorrect) {
+                    allBtns[selectedIdx].classList.add('wrong');
+                } else {
+                    allBtns[selectedIdx].classList.add('correct');
+                }
+                document.getElementById('next-btn').style.display = 'block';
+            }
         }
 
         function checkAnswer(selected, btn) {
@@ -1886,12 +1907,12 @@
 
             allBtns.forEach(b => b.disabled = true);
 
-            userAnswers.push({
+            userAnswers[currentIdx] = {
                 question: q.question,
                 selected: q.options[selected],
                 correct: q.options[q.answer],
                 isCorrect: selected === q.answer
-            });
+            };
 
             if (selected === q.answer) {
                 btn.classList.add('correct');
@@ -1908,6 +1929,14 @@
             currentIdx++;
             loadQuestion();
             window.scrollTo(0, 0);
+        }
+
+        function prevQuestion() {
+            if (currentIdx > 0) {
+                currentIdx--;
+                loadQuestion();
+                window.scrollTo(0, 0);
+            }
         }
 
         function restartQuiz() {
